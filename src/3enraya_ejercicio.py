@@ -8,7 +8,7 @@ FICHAS = (' ', 'X', 'O')
 #TODO: Matriz 3x3 con los conjuntos de posiciones permitidas desde cada par fila, columna del tablero:
 # Una tupla que contendrá 3 tuplas (filas), cada una tendrá 3 conjuntos (columnas), 
 # donde cada elemento de un conjunto es una posición accesible en forma de tupla (fila, columna)
-POSICIONES_PERMITIDAS = ???
+POSICIONES_PERMITIDAS = ({1:(1,2,3),2:(1,2,3),3:(1,2,3)})
 
 
 def borrarConsola():
@@ -18,12 +18,10 @@ def borrarConsola():
     elif os.name == "ce" or os.name == "nt" or os.name == "dos":
         os.system ("cls")
 
-
 def pulse_tecla_para_continuar():
     """ Mostrar el mensaje Presione una tecla para continuar y 
     hacer una pausa hasta que se realice la acción."""
     os.system("pause")
-
 
 def mostrar_fila(fila: list):
     """ Mostrar una fila del tablero
@@ -74,11 +72,11 @@ def verificar_ganador(tablero) -> tuple:
     # TODO: Verificar filas y columnas
     # Si el contenido de las celdas de una fila o columna es igual y distinto de cero
     # retornar una de las celdas (jugador) y True
-    ???
+    
 
     # TODO: Verificar diagonales
     # Igual en las diagonales...
-    ???
+    
 
     # Si no retorno nada, quiere decir que aún no ganó nadie...
     return None, False
@@ -123,7 +121,50 @@ def comprobar_casilla(tablero: tuple,
     # ronda > 3: mover ficha => 
     #   si solo ha seleccionado la posición de la ficha que va a mover => comprobar si en dicha posición existe una ficha del jugador
     #   si seleccionó también la posición dónde mover => comprobar si la nueva posición es accesible desde su posición anterior y que la posición destino esté vacía.
-    ???
+    if ronda <= 3:
+        fila, columna = pos_ficha.values()
+        if tablero[fila][columna] != 0:
+            print('ERROR, casilla llena')
+            return False
+        else:
+            tablero[fila][columna] = jugador
+            return True
+
+
+    if ronda > 3:
+        if not pos_ficha_a_mover:
+            print('ERROR: Debes seleccionar la posición de la ficha que deseas mover.')
+            return False
+    else:
+        filam_origen, columnam_origen = pos_ficha_a_mover.values()
+
+        # Comprobar si la posición de la ficha a mover pertenece al jugador actual
+        if tablero[filam_origen][columnam_origen] != jugador:
+            print('ERROR: No puedes mover una ficha que no es tuya.')
+            return False
+
+        filam_destino, columnam_destino = pos_ficha.values()
+
+        # Comprobar si la nueva posición es accesible desde su posición anterior
+        if not ((filam_destino == filam_origen and abs(columnam_destino - columnam_origen) == 1) or
+                (columnam_destino == columnam_origen and abs(filam_destino - filam_origen) == 1)):
+            print('ERROR: Movimiento no válido. Solo puedes mover a una casilla adyacente.')
+            return False
+
+        # Comprobar si la posición destino está vacía
+        if tablero[filam_destino][columnam_destino] != 0:
+            print('ERROR: La posición destino ya está ocupada.')
+            return False
+
+        # Realizar el movimiento
+        tablero[filam_destino][columnam_destino] = jugador
+        tablero[filam_origen][columnam_origen] = 0
+        return True
+
+
+        
+
+
 
 
 def colocar_ficha(tablero: tuple, jugador: int, ronda: int):
@@ -139,7 +180,9 @@ def colocar_ficha(tablero: tuple, jugador: int, ronda: int):
     while not pos_correcta:
         #TODO: Si ronda es mayor que 3, debe pedir la fila y columna de la ficha a mover y comprobar que la casilla es del jugador con el turno...
         if ronda > 3:
-            ???
+            pos_ficha_a_mover['fila'] = pedir_posicion("fila", f"\nJugador {jugador}, seleccione una ficha para MOVER...")
+            pos_ficha_a_mover['columna'] = pedir_posicion("columna")
+            pos_correcta = comprobar_casilla(tablero, jugador, ronda, pos_ficha, pos_ficha_a_mover)
 
         if pos_correcta or ronda <= 3:
             pos_ficha['fila'] = pedir_posicion("fila", f"\nJugador {jugador}, seleccione una posición para COLOCAR su ficha...")
@@ -147,18 +190,20 @@ def colocar_ficha(tablero: tuple, jugador: int, ronda: int):
             pos_correcta = comprobar_casilla(tablero, jugador, ronda, pos_ficha, pos_ficha_a_mover)
 
         if pos_correcta:
-            # TODO: Si la ronda es mayor que 3, poner la celda de la ficha que se ha movido vacía
-            ???
+            if ronda > 3:
+                # TODO: Si la ronda es mayor que 3, poner la celda de la ficha que se ha movido vacía
+                filam_origen, columnam_origen = pos_ficha_a_mover.values()
+                tablero[filam_origen][columnam_origen] = 0
+                #TODO: Establecer la posición del tablero según pos_ficha al jugador que tiene el turno
+                filam_destino, columnam_destino = pos_ficha['fila'], pos_ficha['columna']
+                tablero[filam_destino][columnam_destino] = jugador
 
-            #TODO: Establecer la posición del tablero según pos_ficha al jugador que tiene el turno
-            ???
         else:
             pos_ficha['fila'] = pos_ficha['columna'] = None
             pos_ficha_a_mover['fila'] = pos_ficha_a_mover['columna'] = None
             print("**Error** movimiento inválido")
             pulse_tecla_para_continuar()
             mostrar_tablero(tablero)
-
 
 def cambiar_turno(turno: int) -> int:
     """ Modificar el turno.
