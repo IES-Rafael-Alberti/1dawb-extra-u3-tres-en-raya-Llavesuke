@@ -77,7 +77,19 @@ def verificar_ganador(tablero) -> tuple:
     # TODO: Verificar filas y columnas
     # Si el contenido de las celdas de una fila o columna es igual y distinto de cero
     # retornar una de las celdas (jugador) y True
-    
+    combinaciones_ganadoras = (
+        ({(0,0),(0,1),(0,2)}, {(1,0),(1,1),(1,2)}, {(2,0),(2,1),(2,2)}),
+        ({(0,0),(1,0),(2,0)}, {(0,1),(1,1),(2,1)}, {(0,2),(1,2),(2,2)}),
+        ({(0,0),(1,1),(2,2)}, {(0,2),(1,1),(2,0)})
+    )
+    for combinacion_ganadora in combinaciones_ganadoras:
+        for conjunto in combinacion_ganadora:
+                if all(tablero[fila][columna] == 1 for fila, columna in conjunto):
+                    return 1, True
+                if all(tablero[fila][columna] == 2 for fila, columna in conjunto):
+                    return 2, True            
+
+
 
     # TODO: Verificar diagonales
     # Igual en las diagonales...
@@ -211,7 +223,6 @@ def jugar(tablero: tuple):
     ganador = ""
 
     while not hay_ganador:
-
         turno = cambiar_turno(turno)
         if turno == 1:
             ronda += 1
@@ -222,15 +233,15 @@ def jugar(tablero: tuple):
         colocar_ficha(tablero, turno, ronda)
         mostrar_tablero(tablero)
 
-        verificar_ganador(tablero)
+        ganador,hay_ganador = verificar_ganador(tablero)
         if hay_ganador:
             print(f"\n¡El jugador {ganador} ha ganado!\n")
+
 
 
 def main():
     tablero = crear_tablero()
     mostrar_tablero(tablero)
-    print(POSICIONES_PERMITIDAS[2][1])
     jugar(tablero)
     
 
